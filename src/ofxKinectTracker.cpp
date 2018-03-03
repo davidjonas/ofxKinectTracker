@@ -42,6 +42,8 @@ void ofxKinectTracker::init(int index){
   tolerance = 100;
   removeAfterSeconds = 10;
   idCounter = 0;
+  maxDepth = 10;
+  minDepth = 0;
 }
 
 ofxKinectTracker::~ofxKinectTracker(){
@@ -172,13 +174,18 @@ void ofxKinectTracker::subtractBackground() {
 
 	int numPixels = pix.size();
 	for(int i = 0; i < numPixels; i++) {
-		if(abs(pix[i] - bgPix[i]) < threshold) {
-			d[i] = 0;
-		}
-		else
-		{
-			d[i] = 255;
-		}
+    if(pix[i] < 255-minDepth && pix[i] > 255-maxDepth){
+  		if(abs(pix[i] - bgPix[i]) < threshold) {
+  			d[i] = 0;
+  		}
+  		else
+  		{
+  			d[i] = 255;
+  		}
+    }
+    else{
+      d[i] = 0;
+    }
 	}
 
   diff.flagImageChanged();
