@@ -42,7 +42,7 @@ void ofxKinectTracker::init(int index){
   tolerance = 100;
   removeAfterSeconds = 10;
   idCounter = 0;
-  maxDepth = 10;
+  maxDepth = 255;
   minDepth = 0;
 }
 
