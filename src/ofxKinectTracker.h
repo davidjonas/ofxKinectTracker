@@ -61,9 +61,6 @@ class ofxKinectTracker {
     int getHeight();
     int getKinectIndex();
 
-
-
-
     //Action Methods
     void init(int index);
     void updateCameraTiltAngle();
@@ -74,6 +71,12 @@ class ofxKinectTracker {
     //The Tracker
     void matchAndUpdateBlobs();
     float getZHintForBlob(ofxCvBlob blob);
+
+    //Image Getters
+    ofxCvColorImage getColorImage();
+    ofxCvGrayscaleImage getGrayImage();
+    ofxCvGrayscaleImage getDepthImage();
+
 
     //Draw and debug methods
     void draw();

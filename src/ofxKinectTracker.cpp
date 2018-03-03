@@ -172,6 +172,9 @@ void ofxKinectTracker::subtractBackground() {
 	ofPixels & bgPix = background.getPixels();
 	ofPixels & d = diff.getPixels();
 
+  //TODO: Better to do the threshold in the source depth image
+  //like it is done in https://github.com/openframeworks/openFrameworks/blob/master/examples/computer_vision/kinectExample/src/ofApp.cpp
+
 	int numPixels = pix.size();
 	for(int i = 0; i < numPixels; i++) {
     if(pix[i] < 255-minDepth && pix[i] > 255-maxDepth){
@@ -260,6 +263,22 @@ void ofxKinectTracker::matchAndUpdateBlobs()
 float ofxKinectTracker::getZHintForBlob(ofxCvBlob blob)
 {
   return kinect->getDistanceAt(blob.centroid);
+}
+
+//Image Getters
+ofxCvColorImage ofxKinectTracker::getColorImage(){
+  return colorImg;
+}
+
+ofxCvGrayscaleImage ofxKinectTracker::getGrayImage(){
+  ofxCvGrayscaleImage grayscale;
+  grayscale.allocate(width, height);
+  grayscale.setFromPixels(colorImg.getPixels());
+  return grayscale;
+}
+
+ofxCvGrayscaleImage ofxKinectTracker::getDepthImage(){
+  return depthImage;
 }
 
 //Draw and debug methods
