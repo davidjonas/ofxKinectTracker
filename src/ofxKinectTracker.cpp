@@ -273,7 +273,7 @@ ofxCvColorImage ofxKinectTracker::getColorImage(){
 ofxCvGrayscaleImage ofxKinectTracker::getGrayImage(){
   ofxCvGrayscaleImage grayscale;
   grayscale.allocate(width, height);
-  grayscale.setFromPixels(colorImg.getPixels());
+  grayscale = colorImg;
   return grayscale;
 }
 
