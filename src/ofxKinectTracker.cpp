@@ -31,9 +31,11 @@ void ofxKinectTracker::init(int index){
   updateCameraTiltAngle();
 
   colorImg.allocate(width,height);
+  grayscale.allocate(width, height);
   depthImage.allocate(width, height);
   background.allocate(width, height);
   diff.allocate(width, height);
+  depthThreshold.allocate(width, height);
   threshold = 3;  //60
   blurAmount = 9;
   backgroundSubtract = false;
@@ -44,6 +46,8 @@ void ofxKinectTracker::init(int index){
   idCounter = 0;
   maxDepth = 255;
   minDepth = 0;
+  minBlobSize = 100;
+  mode = TRACK_DEPTH;
 }
 
 ofxKinectTracker::~ofxKinectTracker(){
@@ -93,6 +97,10 @@ void ofxKinectTracker::setRemoveAfterSeconds(float value){
   removeAfterSeconds = value;
 }
 
+void ofxKinectTracker::setMinBlobSize(float value){
+  minBlobSize = value;
+}
+
 bool ofxKinectTracker::getBackgroundSubtract(){
   return backgroundSubtract;
 }
@@ -125,6 +133,10 @@ float ofxKinectTracker::getRemoveAfterSeconds(){
   return removeAfterSeconds;
 }
 
+float ofxKinectTracker::getMinBlobSize(){
+  return minBlobSize;
+}
+
 int ofxKinectTracker::getWidth(){
   return width;
 }
@@ -137,6 +149,14 @@ int ofxKinectTracker::getKinectIndex(){
   return kinectIndex;
 }
 
+int ofxKinectTracker::getMode(){
+  return mode;
+}
+
+void ofxKinectTracker::setMode(int m){
+  mode = m;
+}
+
 void ofxKinectTracker::updateCameraTiltAngle(){
   kinect->setCameraTiltAngle(kinectAngle);
 }
@@ -145,6 +165,8 @@ void ofxKinectTracker::update(){
   kinect->update();
   colorImg.setFromPixels(kinect->getPixels());
   depthImage.setFromPixels(kinect->getDepthPixels());
+  grayscale = colorImg;
+
   if(blur)
   {
     depthImage.blurGaussian(blurAmount);
@@ -152,25 +174,40 @@ void ofxKinectTracker::update(){
 
   if(backgroundSubtract){
     subtractBackground();
-    contourFinder.findContours(diff, 100, (width*height)/2, 20, false);
+    contourFinder.findContours(diff, minBlobSize, (width*height)/2, 20, false);
   }
   else {
-    depthImage.threshold(threshold);
-    contourFinder.findContours(depthImage, 100, (width*height)/2, 20, false);
+    depthThreshold = depthImage;
+    depthThreshold.threshold(threshold);
+    //ofLogNotice("minimum blob size: ") << minBlobSize;
+    contourFinder.findContours(depthThreshold, minBlobSize, (width*height)/2, 20, false);
   }
 
   matchAndUpdateBlobs();
 }
 
 void ofxKinectTracker::grabBackground() {
-  background.setFromPixels(depthImage.getPixels());
+  if(mode == TRACK_DEPTH)
+  {
+    background.setFromPixels(depthImage.getPixels());
+  }
+  else {
+    background.setFromPixels(grayscale.getPixels());
+  }
+
   backgroundSubtract = true;
 }
 
 void ofxKinectTracker::subtractBackground() {
+
   ofPixels & pix = depthImage.getPixels();
 	ofPixels & bgPix = background.getPixels();
 	ofPixels & d = diff.getPixels();
+
+  if(mode == TRACK_COLOR)
+  {
+    pix = grayscale.getPixels();
+  }
 
   //TODO: Better to do the threshold in the source depth image
   //like it is done in https://github.com/openframeworks/openFrameworks/blob/master/examples/computer_vision/kinectExample/src/ofApp.cpp
@@ -250,7 +287,9 @@ void ofxKinectTracker::matchAndUpdateBlobs()
       {
         if(blobs[i].timeSinceLastSeen() > removeAfterSeconds)
         {
-          blobs.erase(blobs.begin()+i);
+            if(i < blobs.size()){
+                blobs.erase(blobs.begin()+i);
+            }
         }
 
         //TODO: Check for ovelapping blobs;
@@ -271,9 +310,6 @@ ofxCvColorImage ofxKinectTracker::getColorImage(){
 }
 
 ofxCvGrayscaleImage ofxKinectTracker::getGrayImage(){
-  ofxCvGrayscaleImage grayscale;
-  grayscale.allocate(width, height);
-  grayscale = colorImg;
   return grayscale;
 }
 

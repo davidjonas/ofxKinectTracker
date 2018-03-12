@@ -4,17 +4,23 @@
 #include "ofxOpenCv.h"
 #include "ofxKinectBlob.h"
 
+#define TRACK_DEPTH 0
+#define TRACK_COLOR 1
+
 class ofxKinectTracker {
   private:
     ofxKinect * kinect;
     ofxCvColorImage colorImg;
+    ofxCvGrayscaleImage grayscale;
     ofxCvGrayscaleImage depthImage;
     ofxCvGrayscaleImage background;
     ofxCvGrayscaleImage diff;
     ofxCvContourFinder contourFinder;
+    ofxCvGrayscaleImage depthThreshold;
 
     int kinectIndex;
     int kinectAngle;
+    int mode;
 
     //flags
     bool backgroundSubtract;
@@ -31,6 +37,7 @@ class ofxKinectTracker {
     float tolerance;
     float removeAfterSeconds;
     int idCounter;
+    float minBlobSize;
 
   public:
     vector<ofxKinectBlob> blobs;
@@ -49,6 +56,7 @@ class ofxKinectTracker {
     void setMinDepth(float value);
     void setTolerance(float value);
     void setRemoveAfterSeconds(float value);
+    void setMinBlobSize(float value);
     bool getBackgroundSubtract();
     bool getBlur();
     float getBlurAmount();
@@ -59,7 +67,10 @@ class ofxKinectTracker {
     float getRemoveAfterSeconds();
     int getWidth();
     int getHeight();
+    float getMinBlobSize();
     int getKinectIndex();
+    int getMode();
+    void setMode(int m);
 
     //Action Methods
     void init(int index);
