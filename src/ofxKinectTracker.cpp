@@ -42,7 +42,7 @@ void ofxKinectTracker::init(int index){
   blur = false;
   initialized = true;
   tolerance = 100;
-  removeAfterSeconds = 10;
+  removeAfterSeconds = 5;
   idCounter = 0;
   maxDepth = 255;
   minDepth = 0;
@@ -156,6 +156,21 @@ int ofxKinectTracker::getMode(){
 void ofxKinectTracker::setMode(int m){
   mode = m;
 }
+
+
+int ofxKinectTracker::getNumActiveBlobs()
+{
+  uint8_t count = 0;
+  for(uint8_t i=0; i<blobs.size(); i++)
+  {
+    if(blobs[i].isActive())
+    {
+      count++;
+    }
+  }
+  return count;
+}
+
 
 void ofxKinectTracker::updateCameraTiltAngle(){
   kinect->setCameraTiltAngle(kinectAngle);

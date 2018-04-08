@@ -71,6 +71,7 @@ class ofxKinectTracker {
     int getKinectIndex();
     int getMode();
     void setMode(int m);
+    int getNumActiveBlobs();
 
     //Action Methods
     void init(int index);
