@@ -18,18 +18,26 @@ ofxKinectTracker::ofxKinectTracker(int index, float tolerance){
   this->tolerance = tolerance;
 }
 
+ofxKinectTracker::~ofxKinectTracker(){
+  kinect.close();
+}
+
+int ofxKinectTracker::numKinectsDetected()
+{
+  return kinect.numKinectsDetected();
+}
+
 void ofxKinectTracker::init(int index){
   kinectIndex = index;
-  kinect = new ofxKinect();
-  kinect->setRegistration(true);
-  kinect->init();
-  kinect->open(kinectIndex);
+  kinect.setRegistration(true);
+  kinect.init();
+  kinect.open();
 
-  width = kinect->width;
-  height = kinect->height;
+  width = kinect.width;
+  height = kinect.height;
 
   kinectAngle = KINECTANGLEDEFAULT;
-  updateCameraTiltAngle();
+  //updateCameraTiltAngle();
 
   colorImg.allocate(width,height);
   grayscale.allocate(width, height);
@@ -49,11 +57,6 @@ void ofxKinectTracker::init(int index){
   minDepth = 0;
   minBlobSize = 100;
   mode = TRACK_DEPTH;
-}
-
-ofxKinectTracker::~ofxKinectTracker(){
-  kinect->close();
-  delete kinect;
 }
 
 //Getters and setters
@@ -227,13 +230,13 @@ bool ofxKinectTracker::isOverlapCandidate(ofxKinectBlob blob){
 
 
 void ofxKinectTracker::updateCameraTiltAngle(){
-  kinect->setCameraTiltAngle(kinectAngle);
+  kinect.setCameraTiltAngle(kinectAngle);
 }
 
 void ofxKinectTracker::update(){
-  kinect->update();
-  colorImg.setFromPixels(kinect->getPixels());
-  depthImage.setFromPixels(kinect->getDepthPixels());
+  kinect.update();
+  colorImg.setFromPixels(kinect.getPixels());
+  depthImage.setFromPixels(kinect.getDepthPixels());
   grayscale = colorImg;
 
   if(blur)
@@ -416,7 +419,7 @@ void ofxKinectTracker::matchAndUpdateBlobs()
 
 float ofxKinectTracker::getZHintForBlob(ofxCvBlob blob)
 {
-  return kinect->getDistanceAt(blob.centroid);
+  return kinect.getDistanceAt(blob.centroid);
 }
 
 void ofxKinectTracker::clearBlobs(){
@@ -450,12 +453,12 @@ void ofxKinectTracker::drawDepth(float x, float y, float scale)
 
 void ofxKinectTracker::drawRGB(float x, float y)
 {
-  kinect->draw(x, y, width, height);
+  colorImg.draw(x, y, width, height);
 }
 
 void ofxKinectTracker::drawRGB(float x, float y, float scale)
 {
-  kinect->draw(x, y, width*scale, height*scale);
+  colorImg.draw(x, y, width*scale, height*scale);
 }
 
 void ofxKinectTracker::drawBlobPositions(float x, float y){
@@ -555,7 +558,11 @@ void ofxKinectTracker::drawEdgeThreshold(float x, float y, float scale)
   ofDrawRectangle(x+(edgeThreshold * scale),y+(edgeThreshold * scale), (width*scale)-((edgeThreshold * scale)*2), (height*scale)-((edgeThreshold * scale)*2));
 }
 
+//Calibration
+void ofxKinectTracker::calibratePosition(int index, ofPoint p){
+  kinect.calibratePosition(index, p);
+}
+
 void ofxKinectTracker::close(){
-  kinect->close();
-  delete kinect;
+  kinect.close();
 }

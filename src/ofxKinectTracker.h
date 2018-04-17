@@ -3,13 +3,14 @@
 #include "ofxKinect.h"
 #include "ofxOpenCv.h"
 #include "ofxKinectBlob.h"
+#include "ofxKinectArray.h"
 
 #define TRACK_DEPTH 0
 #define TRACK_COLOR 1
 
 class ofxKinectTracker {
   private:
-    ofxKinect * kinect;
+    ofxKinectArray kinect;
     ofxCvColorImage colorImg;
     ofxCvGrayscaleImage grayscale;
     ofxCvGrayscaleImage depthImage;
@@ -48,7 +49,7 @@ class ofxKinectTracker {
     ofxKinectTracker(int index, float tolerance);
     ~ofxKinectTracker();
 
-    //Kinect handlers
+    int numKinectsDetected();
 
     //Getters and setters
     void setBackgroundSubtract(bool value);
@@ -116,6 +117,9 @@ class ofxKinectTracker {
     void drawDebug(float x, float y, float scale);
     void drawEdgeThreshold(float x, float y);
     void drawEdgeThreshold(float x, float y, float scale);
+
+    //Calibration
+    void calibratePosition(int index, ofPoint p);
 
     //closing
     void close();
