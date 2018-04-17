@@ -7,6 +7,7 @@ ofxKinectBlob::ofxKinectBlob(int id, ofxCvBlob blob, float zHint, float toleranc
   this->tolerance = tolerance;
   this->id = id;
   this->overlap = false;
+  speed = 0;
 }
 
 ofxKinectBlob::~ofxKinectBlob(){
@@ -19,9 +20,20 @@ void ofxKinectBlob::update(ofxCvBlob blob, float zHint)
   direction.y = blob.centroid.y - this->blob.centroid.y;
   direction.z = zHint - this->zHint;
 
+  speed = direction.length();
+
   this->blob = blob;
   this->zHint = zHint;
   this->active = true;
+}
+
+bool ofxKinectBlob::intersects(const ofxKinectBlob otherBlob){
+  ofRectangle intersection = blob.boundingRect.getIntersection(otherBlob.blob.boundingRect);
+  return intersection.width != 0 || intersection.height != 0 || intersection.x != 0 || intersection.y != 0;
+}
+
+ofRectangle ofxKinectBlob::getIntersection(ofxKinectBlob otherBlob) {
+  return blob.boundingRect.getIntersection(otherBlob.blob.boundingRect);
 }
 
 float ofxKinectBlob::difference(ofxCvBlob otherBlob, float zHint){
@@ -45,6 +57,16 @@ float ofxKinectBlob::difference(ofxCvBlob otherBlob, float zHint){
   float result = distance + deviation/5 + areaDiff;
 
   return result;
+}
+
+void ofxKinectBlob::setTolerance(float value)
+{
+  tolerance = value;
+}
+
+float ofxKinectBlob::getTolerance()
+{
+  return tolerance;
 }
 
 void ofxKinectBlob::draw(float x, float y){

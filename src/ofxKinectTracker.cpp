@@ -6,6 +6,7 @@ ofxKinectTracker::ofxKinectTracker() {
   kinectAngle = KINECTANGLEDEFAULT;
   initialized = false;
   tolerance = 50;
+  edgeThreshold = 10.0f;
 }
 
 ofxKinectTracker::ofxKinectTracker(int index){
@@ -91,10 +92,19 @@ void ofxKinectTracker::setMinDepth(float value){
 
 void ofxKinectTracker::setTolerance(float value){
   tolerance = value;
+  //Updating existing blobs.
+  for(uint8_t i=0; i<blobs.size(); i++)
+  {
+    blobs[i].setTolerance(tolerance);
+  }
 }
 
 void ofxKinectTracker::setRemoveAfterSeconds(float value){
   removeAfterSeconds = value;
+}
+
+void ofxKinectTracker::setEdgeThreshold(float value){
+  edgeThreshold = value;
 }
 
 void ofxKinectTracker::setMinBlobSize(float value){
@@ -133,6 +143,10 @@ float ofxKinectTracker::getRemoveAfterSeconds(){
   return removeAfterSeconds;
 }
 
+float ofxKinectTracker::getEdgeThreshold(){
+  return edgeThreshold;
+}
+
 float ofxKinectTracker::getMinBlobSize(){
   return minBlobSize;
 }
@@ -169,6 +183,46 @@ int ofxKinectTracker::getNumActiveBlobs()
     }
   }
   return count;
+}
+
+vector<ofxKinectBlob> ofxKinectTracker::getActiveBlobs(){
+  vector<ofxKinectBlob> vec;
+
+  for(uint8_t i=0; i<blobs.size(); i++)
+  {
+    if(blobs[i].isActive())
+    {
+      vec.push_back(blobs[i]);
+    }
+  }
+
+  return vec;
+}
+
+bool ofxKinectTracker::isOverlapCandidate(ofxKinectBlob blob){
+
+  ofRectangle margin(edgeThreshold, edgeThreshold, width-edgeThreshold*2, height-edgeThreshold*2);
+  ofRectangle inter = blob.blob.boundingRect.getIntersection(margin);
+  return inter.getArea() >= blob.blob.boundingRect.getArea()/2;
+
+  // bool result = true;
+  // ofVec3f perdictedLocation = blob.blob.centroid + blob.direction;
+  //
+  // float distanceFromEdge = perdictedLocation.x; //left edge
+  // if(perdictedLocation.y < distanceFromEdge) //Top edge
+  // {
+  //   distanceFromEdge = perdictedLocation.y;
+  // }
+  // if(width - perdictedLocation.x < distanceFromEdge) //Right edge
+  // {
+  //   distanceFromEdge = width - perdictedLocation.x;
+  // }
+  // if(height - perdictedLocation.y < distanceFromEdge) //Bottom edge
+  // {
+  //   distanceFromEdge = height - perdictedLocation.y;
+  // }
+  //
+  // return distanceFromEdge > edgeThreshold;
 }
 
 
@@ -211,6 +265,7 @@ void ofxKinectTracker::grabBackground() {
   }
 
   backgroundSubtract = true;
+  clearBlobs();
 }
 
 void ofxKinectTracker::subtractBackground() {
@@ -267,7 +322,7 @@ void ofxKinectTracker::matchAndUpdateBlobs()
       {
         if(blobDiff == minDifference)
         {
-          //TODO: There are two blobs that match, this is rare. How to decide which blob is which?
+          //TODO: There are two blobs that match, this is really rare. How to decide which blob is which?
           //      right now the latest blob in the vector will be chosen.
           ofLog(OF_LOG_WARNING) << "Blob conflict found!!" << endl;
         }
@@ -283,7 +338,17 @@ void ofxKinectTracker::matchAndUpdateBlobs()
     }
     else
     {
-      newBlobs.push_back(*currentBlob);
+      bool isValid = true;
+      // for(int i=0; i<blobs.size(); i++)
+      // {
+      //   float interArea = currentBlob->boundingRect.getIntersection(blobs[i].blob.boundingRect).getArea();
+      //   if(interArea != 0 && (interArea >= currentBlob->boundingRect.getArea() * 0.9 || interArea >= blobs[i].blob.boundingRect.getArea() * 0.7))
+      //   {
+      //     isValid = false;
+      //   }
+      // }
+
+      if(isValid) newBlobs.push_back(*currentBlob);
     }
 
     currentBlob++;
@@ -300,16 +365,51 @@ void ofxKinectTracker::matchAndUpdateBlobs()
   {
       if(!trackedBlob[i])
       {
-        if(blobs[i].timeSinceLastSeen() > removeAfterSeconds)
+        if(!blobs[i].isOverlapping() && blobs[i].timeSinceLastSeen() > removeAfterSeconds)
         {
             if(i < blobs.size()){
                 blobs.erase(blobs.begin()+i);
             }
         }
 
-        //TODO: Check for ovelapping blobs;
-      }
 
+        if((blobs[i].isActive() || blobs[i].isOverlapping()) && isOverlapCandidate(blobs[i]))
+        {
+          //TODO: Check for ovelapping blobs;
+          int overlapIndex = -1;
+          for(uint8_t b=0; b<blobs.size(); b++)
+          {
+            if(trackedBlob[b] && isOverlapCandidate(blobs[b]) && blobs[i].intersects(blobs[b]))
+            {
+              //BLOBS OVERLAP!
+              blobs[i].setOverlap(true);
+              blobs[b].setOverlap(true);
+              overlapIndex = b;
+              break;
+            }
+          }
+
+          if(overlapIndex == -1)
+          {
+            blobs[i].setOverlap(false);
+          }
+        }
+      }
+      else {
+        if(blobs[i].isOverlapping())
+        {
+          for(uint8_t b=0; b<blobs.size(); b++)
+          {
+            if(trackedBlob[b] && blobs[b].isOverlapping() && !blobs[i].intersects(blobs[b]))
+            {
+              //BLOBS STOPPED OVERLAPPING!
+              blobs[i].setOverlap(false);
+              blobs[b].setOverlap(false);
+              break;
+            }
+          }
+        }
+      }
       blobs[i].setActive(trackedBlob[i]);
   }
 }
@@ -318,6 +418,11 @@ float ofxKinectTracker::getZHintForBlob(ofxCvBlob blob)
 {
   return kinect->getDistanceAt(blob.centroid);
 }
+
+void ofxKinectTracker::clearBlobs(){
+  blobs.clear();
+}
+
 
 //Image Getters
 ofxCvColorImage ofxKinectTracker::getColorImage(){
@@ -372,6 +477,18 @@ void ofxKinectTracker::drawBlobPositions(float x, float y, float scale){
       ofDrawBitmapString(ofToString(blobs[i].id),
             x+ blobs[i].blob.centroid.x * scale,
             y+ blobs[i].blob.centroid.y * scale);
+
+      if(blobs[i].isOverlapping())
+      {
+        ofSetLineWidth(10);
+        ofNoFill();
+        ofSetColor(255,0,0);
+        ofDrawRectangle(x+blobs[i].blob.boundingRect.x * scale,
+                        y+blobs[i].blob.boundingRect.y * scale,
+                        blobs[i].blob.boundingRect.width * scale,
+                        blobs[i].blob.boundingRect.height * scale);
+        ofSetLineWidth(1);
+      }
     }
     else {
       ofNoFill();
@@ -423,6 +540,19 @@ void ofxKinectTracker::drawDebug(float x, float y, float scale) {
   drawRGB(x+width*scale/2, y+height*scale/2, 0.5 * scale);
   drawContours(x+width*scale/2, y+height*scale/2, 0.5 * scale);
   drawBlobPositions(x+width*scale/2, y+height*scale/2, 0.5 * scale);
+  drawEdgeThreshold(x+width*scale/2, y+height*scale/2, 0.5 * scale);
+}
+
+void ofxKinectTracker::drawEdgeThreshold(float x, float y)
+{
+  drawEdgeThreshold(x, y, 1.0);
+}
+
+void ofxKinectTracker::drawEdgeThreshold(float x, float y, float scale)
+{
+  ofNoFill();
+  ofSetColor(255, 90, 90);
+  ofDrawRectangle(x+(edgeThreshold * scale),y+(edgeThreshold * scale), (width*scale)-((edgeThreshold * scale)*2), (height*scale)-((edgeThreshold * scale)*2));
 }
 
 void ofxKinectTracker::close(){

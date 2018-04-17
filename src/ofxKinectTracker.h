@@ -38,6 +38,7 @@ class ofxKinectTracker {
     float removeAfterSeconds;
     int idCounter;
     float minBlobSize;
+    float edgeThreshold;
 
   public:
     vector<ofxKinectBlob> blobs;
@@ -46,6 +47,8 @@ class ofxKinectTracker {
     ofxKinectTracker(int index);
     ofxKinectTracker(int index, float tolerance);
     ~ofxKinectTracker();
+
+    //Kinect handlers
 
     //Getters and setters
     void setBackgroundSubtract(bool value);
@@ -56,6 +59,7 @@ class ofxKinectTracker {
     void setMinDepth(float value);
     void setTolerance(float value);
     void setRemoveAfterSeconds(float value);
+    void setEdgeThreshold(float value);
     void setMinBlobSize(float value);
     bool getBackgroundSubtract();
     bool getBlur();
@@ -65,6 +69,7 @@ class ofxKinectTracker {
     float getMinDepth();
     float getTolerance();
     float getRemoveAfterSeconds();
+    float getEdgeThreshold();
     int getWidth();
     int getHeight();
     float getMinBlobSize();
@@ -72,6 +77,8 @@ class ofxKinectTracker {
     int getMode();
     void setMode(int m);
     int getNumActiveBlobs();
+    vector<ofxKinectBlob> getActiveBlobs();
+    bool isOverlapCandidate(ofxKinectBlob blob);
 
     //Action Methods
     void init(int index);
@@ -83,6 +90,7 @@ class ofxKinectTracker {
     //The Tracker
     void matchAndUpdateBlobs();
     float getZHintForBlob(ofxCvBlob blob);
+    void clearBlobs();
 
     //Image Getters
     ofxCvColorImage getColorImage();
@@ -106,6 +114,8 @@ class ofxKinectTracker {
     void drawDiff(float x, float y, float scale);
     void drawDebug(float x, float y);
     void drawDebug(float x, float y, float scale);
+    void drawEdgeThreshold(float x, float y);
+    void drawEdgeThreshold(float x, float y, float scale);
 
     //closing
     void close();
