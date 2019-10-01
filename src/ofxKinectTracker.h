@@ -19,7 +19,7 @@ class ofxKinectTracker {
     ofxCvContourFinder contourFinder;
     ofxCvGrayscaleImage depthThreshold;
 
-    int kinectIndex;
+    int numKinects;
     int kinectAngle;
     int mode;
 
@@ -45,8 +45,6 @@ class ofxKinectTracker {
     vector<ofxKinectBlob> blobs;
 
     ofxKinectTracker();
-    ofxKinectTracker(int index);
-    ofxKinectTracker(int index, float tolerance);
     ~ofxKinectTracker();
 
     int numKinectsDetected();
@@ -74,15 +72,16 @@ class ofxKinectTracker {
     int getWidth();
     int getHeight();
     float getMinBlobSize();
-    int getKinectIndex();
     int getMode();
     void setMode(int m);
     int getNumActiveBlobs();
     vector<ofxKinectBlob> getActiveBlobs();
     bool isOverlapCandidate(ofxKinectBlob blob);
+    bool thereAreOverlaps();
+    ofxKinectBlob * getOverlapBlob();
 
     //Action Methods
-    void init(int index);
+    void init();
     void updateCameraTiltAngle();
     void update();
     void grabBackground();

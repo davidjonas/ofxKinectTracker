@@ -43,12 +43,12 @@ float ofxKinectBlob::difference(ofxCvBlob otherBlob, float zHint){
             zHint - this->zHint
   );
 
-  float distance = diff.length();
-
-  if (distance > tolerance)
+  if(this->blob.boundingRect.inside(otherBlob.centroid))
   {
-    return -1;
+    return 0;
   }
+
+  float distance = diff.length();
 
   ofVec3f expectedLocationDiff = (blob.centroid + direction) - otherBlob.centroid;
   float deviation = expectedLocationDiff.length();
@@ -56,7 +56,14 @@ float ofxKinectBlob::difference(ofxCvBlob otherBlob, float zHint){
 
   float result = distance + deviation/5 + areaDiff;
 
-  return result;
+  if (distance > tolerance)
+  {
+    return -1;
+  }
+  else
+  {
+    return result;
+  }
 }
 
 void ofxKinectBlob::setTolerance(float value)
