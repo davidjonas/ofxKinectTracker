@@ -198,25 +198,6 @@ bool ofxKinectTracker::isOverlapCandidate(ofxKinectBlob blob){
   ofRectangle margin(edgeThreshold, edgeThreshold, width-edgeThreshold*2, height-edgeThreshold*2);
   ofRectangle inter = blob.blob.boundingRect.getIntersection(margin);
   return inter.getArea() >= blob.blob.boundingRect.getArea()/2;
-
-  // bool result = true;
-  // ofVec3f perdictedLocation = blob.blob.centroid + blob.direction;
-  //
-  // float distanceFromEdge = perdictedLocation.x; //left edge
-  // if(perdictedLocation.y < distanceFromEdge) //Top edge
-  // {
-  //   distanceFromEdge = perdictedLocation.y;
-  // }
-  // if(width - perdictedLocation.x < distanceFromEdge) //Right edge
-  // {
-  //   distanceFromEdge = width - perdictedLocation.x;
-  // }
-  // if(height - perdictedLocation.y < distanceFromEdge) //Bottom edge
-  // {
-  //   distanceFromEdge = height - perdictedLocation.y;
-  // }
-  //
-  // return distanceFromEdge > edgeThreshold;
 }
 
 
