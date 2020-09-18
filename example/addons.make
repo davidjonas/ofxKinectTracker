@@ -1,3 +1,3 @@
-ofxOpenCv
 ofxKinect
 ofxKinectTracker
+ofxOpenCv
