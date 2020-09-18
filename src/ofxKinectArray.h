@@ -17,7 +17,20 @@ class ofxKinectImageCalibration
     }
 
     ofxKinectImageCalibration(int index) : width(640), height(480), position(640 * index, 0.0f), scale(1.0f, 1.0f), rotation(0) {
-      ofLogNotice("ofxKinectImageCalibration") << "Calibrating kinect " << index << " to position: (" << position.x << ", " << position.y << ")";
+      ofLogNotice("ofxKinectImageCalibration") <<
+        "Calibrating kinect " <<
+        index <<
+        " to position: (" <<
+        position.x <<
+        ", " <<
+        position.y <<
+        "), scale(" <<
+        scale.x <<
+        " ," <<
+        scale.y<<
+        "), rotation(" <<
+        rotation <<
+        ")";
     }
 
     ~ofxKinectImageCalibration(){
@@ -247,7 +260,7 @@ class ofxKinectArray
     ofPixels & getPixels()
     {
       colorFbo.bind();
-      glViewport(0, -height, width, height);
+      glViewport(0, -height*2, width/(0.5*kinects.size()), height*2); //TODO: THis is really weird!! Why do I have to stretch the viewport 2x to fill up the buffer?
       ofClear(0, 0, 0, 255);
       ofSetColor(255);
       ofEnableBlendMode(OF_BLENDMODE_SCREEN);
@@ -271,7 +284,7 @@ class ofxKinectArray
     ofPixels & getDepthPixels()
     {
       depthFbo.bind();
-      glViewport(0, -height, width, height);
+      glViewport(0, -height*2, width/(0.5*kinects.size()), height*2); //TODO: THis is really weird!! Why do I have to stretch the viewport 2x to fill up the buffer?
       ofClear(0, 0, 0, 0);
       ofSetColor(255);
       ofEnableBlendMode(OF_BLENDMODE_SCREEN);

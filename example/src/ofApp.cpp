@@ -15,6 +15,11 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
+  //tracker.drawDepth(0, 0);
+  //tracker.drawRGB(0,0);
+  //tracker.drawBlobPositions(0,0);
+  //tracker.drawContours(0,0);
+  //tracker.drawBackground(0,0); //press spacebar to capture the background
   tracker.drawDebug(0,0); //Draws all the visualizations
 }
 

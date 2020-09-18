@@ -31,7 +31,7 @@ void ofxKinectTracker::init(){
     height = kinect.height;
 
     kinectAngle = KINECTANGLEDEFAULT;
-    //updateCameraTiltAngle();
+    updateCameraTiltAngle();
 
     colorImg.allocate(width,height);
     grayscale.allocate(width, height);
@@ -597,13 +597,13 @@ void ofxKinectTracker::drawDebug(float x, float y) {
 void ofxKinectTracker::drawDebug(float x, float y, float scale) {
   if(numKinects > 0)
   {
-    drawDepth(x,y,0.5 * scale);
-    drawBackground(x+width*scale/2, y, 0.5 * scale);
-    drawDiff(x, y+height*scale/2, 0.5 * scale);
-    drawRGB(x+width*scale/2, y+height*scale/2, 0.5 * scale);
-    drawContours(x+width*scale/2, y+height*scale/2, 0.5 * scale);
-    drawBlobPositions(x+width*scale/2, y+height*scale/2, 0.5 * scale);
-    drawEdgeThreshold(x+width*scale/2, y+height*scale/2, 0.5 * scale);
+    drawDepth(x,y,scale/2.0f);
+    drawBackground(x+width*scale/2.0f, y, scale/2.0f);
+    drawDiff(x, y+height*scale/2.0f, scale/2.0f);
+    drawRGB(x+width*scale/2.0f, y+height*scale/2.0f, scale/2.0f);
+    drawContours(x+width*scale/2.0f, y+height*scale/2.0f, scale/2.0f);
+    drawBlobPositions(x+width*scale/2.0f, y+height*scale/2.0f, scale/2.0f);
+    drawEdgeThreshold(x+width*scale/2.0f, y+height*scale/2.0f, scale/2.0f);
   }
 }
 
